@@ -1,0 +1,201 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Сервис динамического сегментирования пользователей",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost/api/v1"
+    }
+  ],
+  "tags": [
+    {
+      "name": "segments",
+      "description": "actions with segments"
+    },
+    {
+      "name": "users",
+      "description": "action with users"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Segments": {
+        "type": "array",
+        "description": "list of segments",
+        "items": {
+          "type": "string",
+          "example": "AVITO_VOICE_MESSAGES, AVITO_PERFORMANCE_VAS, AVITO_DISCOUNT_30, AVITO_DISCOUNT_50"
+        }
+      },
+      "ChangeSegmentsList": {
+        "type": "object",
+        "description": "segments to add and delete",
+        "properties": {
+          "add": {
+            "$ref": "#/components/schemas/Segments"
+          },
+          "delete": {
+            "$ref": "#/components/schemas/Segments"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/segments": {
+      "post": {
+        "tags": [
+          "segments"
+        ],
+        "summary": "create segment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful creation"
+          }
+        }
+      }
+    },
+    "/segments/{name}": {
+      "delete": {
+        "tags": [
+          "segments"
+        ],
+        "summary": "delete segment",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful creation",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "successful creation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "segment is not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "successful deletion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/segments": {
+      "put": {
+        "tags": [
+          "users"
+        ],
+        "summary": "add segments, delete segments",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeSegmentsList"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful changing",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "successful changing"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "user is not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "user is not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/segments/active": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "get active user segments",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Segments"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
