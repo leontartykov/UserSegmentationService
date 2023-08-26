@@ -4,6 +4,7 @@ import (
 	"log"
 	"main/server"
 	"main/server/handlers"
+	"main/server/pkg/dbclient"
 	"main/server/session"
 
 	"github.com/gin-gonic/gin"
@@ -28,8 +29,12 @@ func main() {
 	}
 
 	config := session.GetConfig()
+	_, err := dbclient.NewDbConnection(&config.DB)
 
-	log.Println("Server will be running")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	server.Run(config, router)
 
 }

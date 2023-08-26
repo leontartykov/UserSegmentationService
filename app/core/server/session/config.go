@@ -16,6 +16,7 @@ type DB struct {
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
 	DBName   string `yaml:""`
+	SSLMode  string
 }
 
 type Config struct {
@@ -30,6 +31,7 @@ func GetDBConfig() *DB {
 		User:     os.Getenv("DB_USER"),
 		Password: os.Getenv("DB_PASSWORD"),
 		DBName:   os.Getenv("DB_NAME"),
+		SSLMode:  os.Getenv("SSL_MODE"),
 	}
 }
 

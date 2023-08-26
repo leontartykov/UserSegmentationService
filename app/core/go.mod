@@ -3,6 +3,11 @@ module main
 go 1.20
 
 require (
+	github.com/jmoiron/sqlx v1.3.5
+	github.com/lib/pq v1.2.0
+)
+
+require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
