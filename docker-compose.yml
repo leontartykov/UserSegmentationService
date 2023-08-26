@@ -36,12 +36,12 @@ services:
     working_dir: /usr/src/app/core
     command: go run ./main.go
     environment:
-      DB_HOST: db
-      DB_PORT: "5432"
-      DB_USER: postgres
+      DB_HOST: ${POSTGRES_DB_HOST}
+      DB_PORT: ${POSTGRES_DB_PORT}
+      DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
-      DB_NAME: userSegmentAppDb
+      DB_NAME: ${POSTGRES_DB_NAME}
       LISTEN_PORT: "8080"
-      BIND_IP: "localhost"
+      BIND_IP: ${BIND_IP}
   
 
