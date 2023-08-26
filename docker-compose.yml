@@ -20,23 +20,28 @@ services:
       - "8080"
     volumes:
       - ./app/etc/nginx/nginx.conf:/etc/nginx/nginx.conf
-    restart: on-failure
+    restart: always
     links:
-      - "app:app"
-  app:
-    container_name: app
+      - "app_backend:app_backend"
+  app_backend:
+    container_name: app_backend
     image: golang:1.20.2-alpine
     restart: on-failure
+    ports:
+      - "8081:8080"
     depends_on:
       - db
     volumes:
       - ./app/core:/usr/src/app/core
     working_dir: /usr/src/app/core
+    command: go run ./main.go
     environment:
       DB_HOST: db
       DB_PORT: "5432"
       DB_USER: postgres
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: userSegmentAppDb
+      LISTEN_PORT: "8080"
+      BIND_IP: "localhost"
   
 
