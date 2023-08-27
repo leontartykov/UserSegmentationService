@@ -1,14 +1,23 @@
 package repository
 
-import "github.com/jmoiron/sqlx"
+import (
+	"main/server/pkg/dbclient"
+
+	"github.com/jmoiron/sqlx"
+)
+
+type ISegmentsRepository interface {
+	Create(segment string) error
+	Delete(segment string) error
+}
 
 type SegmentsRepository struct {
 	db *sqlx.DB
 }
 
-func NewSegmentRepository(db *sqlx.DB) *SegmentsRepository {
+func NewSegmentsRepository(db *dbclient.Client) *SegmentsRepository {
 	return &SegmentsRepository{
-		db: db,
+		db: db.Db,
 	}
 }
 

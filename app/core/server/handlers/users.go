@@ -1,20 +1,33 @@
 package handlers
 
 import (
-	"net/http"
+	"main/server/services"
 
 	"github.com/gin-gonic/gin"
 )
 
-type UsersHandler interface {
+type IUsersHandler interface {
 	ChangeUserSegments(context *gin.Context)
 	GetActiveUserSegments(context *gin.Context)
 }
 
-func ChangeUserSegments(context *gin.Context) {
-	context.JSON(http.StatusOK, gin.H{"status": "put"})
+type UsersHandler struct {
+	service services.UsersService
 }
 
-func GetActiveUserSegments(context *gin.Context) {
-	context.JSON(http.StatusOK, gin.H{"status": "get"})
+func NewUsersHandler(service services.UsersService) *UsersHandler {
+	return &UsersHandler{
+		service: service,
+	}
+}
+
+func (uh *UsersHandler) Register(router *gin.Engine) {
+	v1 := router.Group("/api/v1")
+	{
+		users := v1.Group("/users/:id")
+		{
+			users.PUT("/segments", uh.service.ChangeSegments)
+			users.GET("/segments/active", uh.service.GetActiveSegments)
+		}
+	}
 }
