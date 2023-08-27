@@ -1,7 +1,6 @@
 package session
 
 import (
-	"log"
 	"os"
 )
 
@@ -46,8 +45,6 @@ func GetConfig() *Config {
 	config := &Config{}
 	config.DB = *GetDBConfig()
 	config.Listen = *GetListenConfig()
-
-	log.Println(config)
 
 	return config
 }

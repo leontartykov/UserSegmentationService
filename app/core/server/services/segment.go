@@ -1,15 +1,13 @@
 package services
 
 import (
+	"fmt"
 	"main/server/repository"
-	"net/http"
-
-	"github.com/gin-gonic/gin"
 )
 
 type ISegmentsService interface {
-	CreateSegment(context *gin.Context)
-	DeleteSegment(context *gin.Context)
+	CreateSegment(segmentName string) error
+	DeleteSegment(segmentName string) error
 }
 
 type SegmentsService struct {
@@ -22,10 +20,16 @@ func NewSegmentsService(repository repository.SegmentsRepository) *SegmentsServi
 	}
 }
 
-func (ss *SegmentsService) CreateSegment(context *gin.Context) {
-	context.JSON(http.StatusCreated, gin.H{"status": "created"})
+func (ss *SegmentsService) CreateSegment(segmentName string) error {
+	if segmentName == "" {
+		return fmt.Errorf("failed to get segmentName")
+	}
+
+	ss.repository.Create(segmentName)
+
+	return nil
 }
 
-func (ss *SegmentsService) DeleteSegment(context *gin.Context) {
-	context.JSON(http.StatusCreated, gin.H{"status": "deleted"})
+func (ss *SegmentsService) DeleteSegment(segmentName string) error {
+	return nil
 }

@@ -1,14 +1,15 @@
 package repository
 
 import (
+	"fmt"
 	"main/server/pkg/dbclient"
 
 	"github.com/jmoiron/sqlx"
 )
 
 type ISegmentsRepository interface {
-	Create(segment string) error
-	Delete(segment string) error
+	Create(segmentName string) error
+	Delete(segmentName string) error
 }
 
 type SegmentsRepository struct {
@@ -21,11 +22,24 @@ func NewSegmentsRepository(db *dbclient.Client) *SegmentsRepository {
 	}
 }
 
-func (sq *SegmentsRepository) Create(segment string) error {
-	_, err := sq.db.NamedExec(`INSERT INTO segments (name) VALUES ($1)`, segment)
+func (sq *SegmentsRepository) Create(segmentName string) error {
+	if segmentName == "" {
+		return fmt.Errorf("failed while get empty segmentName")
+	}
+
+	_, err := sq.db.NamedExec(`INSERT INTO segments (name) VALUES (:name);`,
+		map[string]interface{}{
+			"name": segmentName,
+		})
 	return err
 }
 
-func (sq *SegmentsRepository) Delete(segment string) error {
-	return nil
+func (sq *SegmentsRepository) Delete(segmentName string) error {
+	if segmentName == "" {
+		return fmt.Errorf("failed while get empty segmentName")
+	}
+
+	_, err := sq.db.Exec(`DELETE FROM segments WHERE name =$1;`, segmentName)
+
+	return err
 }
