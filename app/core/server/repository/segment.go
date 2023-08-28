@@ -22,24 +22,24 @@ func NewSegmentsRepository(db *dbclient.Client) *SegmentsRepository {
 	}
 }
 
-func (sq *SegmentsRepository) Create(segmentName string) error {
+func (sr *SegmentsRepository) Create(segmentName string) error {
 	if segmentName == "" {
 		return fmt.Errorf("failed while get empty segmentName")
 	}
 
-	_, err := sq.db.NamedExec(`INSERT INTO segments (name) VALUES (:name);`,
+	_, err := sr.db.NamedExec(`INSERT INTO segments (name) VALUES (:name);`,
 		map[string]interface{}{
 			"name": segmentName,
 		})
 	return err
 }
 
-func (sq *SegmentsRepository) Delete(segmentName string) error {
+func (sr *SegmentsRepository) Delete(segmentName string) error {
 	if segmentName == "" {
 		return fmt.Errorf("failed while get empty segmentName")
 	}
 
-	_, err := sq.db.Exec(`DELETE FROM segments WHERE name =$1;`, segmentName)
+	_, err := sr.db.Exec(`DELETE FROM segments WHERE name =$1;`, segmentName)
 
 	return err
 }
