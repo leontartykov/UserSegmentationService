@@ -2,7 +2,6 @@ package repository
 
 import (
 	"fmt"
-	"log"
 	"main/server/pkg/dbclient"
 
 	"github.com/jmoiron/sqlx"
@@ -48,7 +47,6 @@ func (ur *UsersRepository) ChangeSegments(segments DbSegments) error {
 		}
 	}
 	err := tx.Commit()
-	log.Println(err)
 
 	return err
 }

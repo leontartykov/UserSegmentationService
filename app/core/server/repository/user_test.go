@@ -15,11 +15,6 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	err = initDataBase(dbClient)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	userRepo := NewUsersRepository(dbClient)
 
 	dbSegmentsAdd := DbSegments{
@@ -44,6 +39,11 @@ func TestUsersRepositoryInterface(t *testing.T) {
 	dbSegmentsAddSameAfterDelete := DbSegments{
 		to_add:  []string{"AVITO_DISCOUNT_30", "AVITO_PERFORMANCE_VAS"},
 		user_id: "1",
+	}
+
+	err = initDataBase(dbClient, dbSegmentsAdd)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	t.Run("ChangeUserSegmentsAdd", func(t *testing.T) {
@@ -172,17 +172,21 @@ func TestUsersRepositoryInterface(t *testing.T) {
 	})
 }
 
-func initDataBase(dbClient *dbclient.Client) error {
+func initDataBase(dbClient *dbclient.Client, segments DbSegments) error {
 	tx := dbClient.Db.MustBegin()
 
-	query := `DELETE FROM users;`
+	query := `DELETE FROM users;
+			  INSERT INTO users (nickname) VALUES ('user1');
+			  DELETE FROM usersSegments;
+			  DELETE FROM segments;`
+
 	tx.MustExec(query)
 
-	query = `INSERT INTO users (nickname) VALUES ('user1');`
-	tx.MustExec(query)
+	segmentsRepo := NewSegmentsRepository(dbClient)
+	for _, segment := range segments.to_add {
+		segmentsRepo.Create(segment)
+	}
 
-	query = `DELETE FROM usersSegments;`
-	tx.MustExec(query)
 	err := tx.Commit()
 
 	return err
