@@ -15,6 +15,11 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		log.Fatal(err)
 	}
 
+	err = initDataBase(dbClient)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	userRepo := NewUsersRepository(dbClient)
 
 	dbSegmentsAdd := DbSegments{
@@ -131,11 +136,54 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		}
 	})
 
-	/*t.Run("ChangeUserSegmentsDelete", func(t *testing.T) {
-		err := userRepo.ChangeSegments(dbSegmentsDelete)
+	t.Run("GetExistingUsersSegments", func(t *testing.T) {
+		userId := 1
+		userSegments, err := userRepo.GetActiveSegments(userId)
 
 		if err != nil {
-			t.Errorf("No segments; want 1 more")
+			t.Error(err)
 		}
-	})*/
+
+		if len(userSegments) != len(dbSegmentsAdd.to_add) {
+			t.Errorf("Not right number of existsing user segments: expected %d, want %d", len(userSegments), len(dbSegmentsAdd.to_add))
+		}
+	})
+
+	t.Run("GetNotExistingUser", func(t *testing.T) {
+		userId := 2
+		userSegments, err := userRepo.GetActiveSegments(userId)
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		if len(userSegments) != 0 {
+			t.Errorf("Not right number of not existing user: expected %d, want %d", len(userSegments), 0)
+		}
+	})
+
+	t.Run("IncorrectUserId", func(t *testing.T) {
+		userId := 0
+		_, err := userRepo.GetActiveSegments(userId)
+
+		if err == nil {
+			t.Error(err)
+		}
+	})
+}
+
+func initDataBase(dbClient *dbclient.Client) error {
+	tx := dbClient.Db.MustBegin()
+
+	query := `DELETE FROM users;`
+	tx.MustExec(query)
+
+	query = `INSERT INTO users (nickname) VALUES ('user1');`
+	tx.MustExec(query)
+
+	query = `DELETE FROM usersSegments;`
+	tx.MustExec(query)
+	err := tx.Commit()
+
+	return err
 }

@@ -4,12 +4,12 @@ create database usersegmentappdb;
 
 create table users (
     id serial,
-    nickname text
+    nickname text UNIQUE
 );
 
 create table segments (
     id serial,
-    name text
+    name text UNIQUE
 );
 
 create table usersSegments (

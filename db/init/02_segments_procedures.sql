@@ -1,3 +1,5 @@
+\c usersegmentappdb
+
 CREATE OR REPLACE PROCEDURE DeleteUserSegments(userId integer, segment_name text, deletedAt date) AS 
 $$
     BEGIN

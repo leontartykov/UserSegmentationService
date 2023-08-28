@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"log"
 	"main/server/pkg/dbclient"
 
@@ -52,6 +53,25 @@ func (ur *UsersRepository) ChangeSegments(segments DbSegments) error {
 	return err
 }
 
-func (ur *UsersRepository) GetActiveSegments() error {
-	return nil
+func (ur *UsersRepository) GetActiveSegments(userId int) ([]string, error) {
+	var userSegment string
+	var userSegments []string
+	if userId <= 0 {
+		return nil, fmt.Errorf("No user id")
+	}
+
+	tx := ur.db.MustBegin()
+	query := `SELECT segmentName FROM userssegments as us JOIN users on us.userName = users.nickname WHERE users.id = $1 AND deleted_at IS NULL;`
+
+	rows, err := tx.Queryx(query, userId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		rows.Scan(&userSegment)
+		userSegments = append(userSegments, userSegment)
+	}
+	return userSegments, nil
 }
