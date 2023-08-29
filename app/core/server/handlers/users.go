@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"main/server/model"
 	"main/server/services"
@@ -37,6 +38,7 @@ func (uh *UsersHandler) Register(router *gin.Engine) {
 }
 
 func (uh *UsersHandler) ChangeUserSegments(c *gin.Context) {
+	log.Println("HANDLER")
 	id := c.Param("id")
 
 	if _, err := strconv.Atoi(id); err != nil {
@@ -52,19 +54,18 @@ func (uh *UsersHandler) ChangeUserSegments(c *gin.Context) {
 	}
 
 	requestBody.User_id = id
-	log.Println(requestBody)
 
 	err := uh.service.ChangeSegments(requestBody)
 
-	log.Println("ERROR", err)
-
 	if err == nil {
 		c.JSON(http.StatusOK, gin.H{"status": "successful changing"})
-		return
+	} else if fmt.Sprint(err) == "segment not exists" || fmt.Sprint(err) == "no seg data in table" {
+		c.JSON(http.StatusNotFound, gin.H{"status": "one of segments not exists"})
 	} else {
+		log.Println("Error: ", fmt.Sprint(err))
 		c.JSON(http.StatusBadGateway, gin.H{"status": "ooops"})
-		return
 	}
+	return
 }
 
 func (uh *UsersHandler) GetActiveUserSegments(c *gin.Context) {

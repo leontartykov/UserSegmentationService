@@ -13,10 +13,10 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE PROCEDURE AddUserSegments(userId integer, segmentName text, addedAt date) AS 
 $$
     BEGIN
-        IF EXISTS (SELECT FROM segments)
+        IF EXISTS (SELECT 1 FROM segments LIMIT 1)
         THEN
             BEGIN
-                IF NOT EXISTS (SELECT FROM users_segments)
+                IF NOT EXISTS (SELECT 1 FROM users_segments LIMIT 1)
                     THEN INSERT INTO users_segments (user_id, segment_name, added_at) VALUES (userId,  segmentName, addedAt);
                 ELSE
                     BEGIN
@@ -30,4 +30,12 @@ $$
         
     END;
 $$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION CheckSegmentsTableIsEmpty() RETURNS integer AS
+$BODY$  
+    BEGIN
+        RETURN (SELECT CASE WHEN EXISTS(SELECT 1 FROM segments) THEN 1 ELSE 0 END AS IsEmpty);
+    END
+$BODY$
 LANGUAGE plpgsql;

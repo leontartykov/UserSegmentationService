@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 	"main/server/pkg/dbclient"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -31,6 +32,11 @@ func (sr *SegmentsRepository) Create(segmentName string) error {
 		map[string]interface{}{
 			"name": segmentName,
 		})
+
+	if strings.Contains(fmt.Sprint(err), `pq: duplicate key value violates unique constraint "c_segments_name_unique`) {
+		err = fmt.Errorf("dublicate value")
+	}
+
 	return err
 }
 

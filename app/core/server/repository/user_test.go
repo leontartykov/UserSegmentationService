@@ -52,7 +52,7 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		segmentsRepo.Create(segment)
 	}
 
-	t.Run("ChangeUserSegmentsAdd", func(t *testing.T) {
+	t.Run("Unit=ChangeUserSegmentsAdd", func(t *testing.T) {
 		err := userRepo.ChangeSegments(dbSegmentsAdd)
 
 		if err != nil {
@@ -70,7 +70,7 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		}
 	})
 
-	t.Run("ChangeUserSegmentsDelete", func(t *testing.T) {
+	t.Run("Unit=ChangeUserSegmentsDelete", func(t *testing.T) {
 		err := userRepo.ChangeSegments(dbSegmentsDelete)
 
 		if err != nil {
@@ -88,7 +88,7 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		}
 	})
 
-	t.Run("ChangeUserSegmentsEmpty", func(t *testing.T) {
+	t.Run("Unit=ChangeUserSegmentsEmpty", func(t *testing.T) {
 		err := userRepo.ChangeSegments(dbSegmentsEmpty)
 
 		if err != nil {
@@ -106,7 +106,7 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		}
 	})
 
-	t.Run("ChangeUserSegmentsAddSameSegment", func(t *testing.T) {
+	t.Run("Unit=ChangeUserSegmentsAddSameSegment", func(t *testing.T) {
 		err := userRepo.ChangeSegments(dbSegmentsAddSame)
 
 		if err != nil {
@@ -124,7 +124,7 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		}
 	})
 
-	t.Run("ChangeUserSegmentsAddSameSegmentAfterDelete", func(t *testing.T) {
+	t.Run("Unit=ChangeUserSegmentsAddSameSegmentAfterDelete", func(t *testing.T) {
 		err := userRepo.ChangeSegments(dbSegmentsAddSameAfterDelete)
 
 		if err != nil {
@@ -142,7 +142,7 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		}
 	})
 
-	t.Run("IncorrectUserId", func(t *testing.T) {
+	t.Run("Unit=IncorrectUserId", func(t *testing.T) {
 		userId := 0
 		_, err := userRepo.GetActiveSegments(userId)
 
@@ -155,8 +155,7 @@ func TestUsersRepositoryInterface(t *testing.T) {
 func initDataBase(dbClient *dbclient.Client, segments model.DbChangedSegments) error {
 	tx := dbClient.Db.MustBegin()
 
-	query := `DELETE FROM users;
-			  DELETE FROM users_segments;
+	query := `DELETE FROM users_segments;
 			  DELETE FROM segments;`
 
 	tx.MustExec(query)

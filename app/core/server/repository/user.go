@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"log"
 	"main/server/model"
 	"main/server/pkg/dbclient"
 
@@ -24,15 +25,45 @@ func NewUsersRepository(db *dbclient.Client) *UsersRepository {
 }
 
 func (ur *UsersRepository) ChangeSegments(segments model.DbChangedSegments) error {
+	var (
+		isEmptySegTable bool
+		err             error = nil
+	)
+	query := `SELECT CheckSegmentsTableIsEmpty();`
+
+	ur.db.Get(&isEmptySegTable, query)
+	log.Println("isEmptySegTable: ", isEmptySegTable)
+	if isEmptySegTable {
+		return fmt.Errorf("no seg data in table")
+	}
+
 	tx := ur.db.MustBegin()
 
 	if !(len(segments.To_add) == 0) {
 		query := `CALL AddUserSegments($1::integer, $2::text, to_date((now()::date)::text, 'YYYY-MM-DD'));`
 
 		for _, segment := range segments.To_add {
-			tx.MustExec(query, segments.User_id, segment)
+			result := tx.MustExec(query, segments.User_id, segment)
+			_, err = result.RowsAffected()
+
+			if rows, _ := result.RowsAffected(); rows == 0 {
+				log.Println("Error while insert segment data; perhaps segment doesn't exist")
+				err = fmt.Errorf("segment not exists")
+				break
+			}
 		}
 	}
+
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+
+	if err != nil {
+		return err
+	}
+
+	tx = ur.db.MustBegin()
 
 	if !(len(segments.To_delete) == 0) {
 		query := `CALL DeleteUserSegments($1::integer, $2::text, to_date((now()::date)::text, 'YYYY-MM-DD'));`
@@ -41,7 +72,7 @@ func (ur *UsersRepository) ChangeSegments(segments model.DbChangedSegments) erro
 			tx.MustExec(query, segments.User_id, segment)
 		}
 	}
-	err := tx.Commit()
+	err = tx.Commit()
 
 	return err
 }

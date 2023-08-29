@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+	"log"
 	"main/server/services"
 	"net/http"
 
@@ -33,19 +35,41 @@ func (sh *SegmentsHandler) Register(router *gin.Engine) {
 }
 
 type SegmentsRequestBody struct {
-	SegmentName string
+	Name string
 }
 
 func (sh *SegmentsHandler) CreateSegment(c *gin.Context) {
-	var requestBody SegmentsRequestBody
-	if err := c.BindJSON(&requestBody); err != nil {
+	var segRequestBody SegmentsRequestBody
+	if err := c.BindJSON(&segRequestBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "no input data"})
 		return
 	}
 
-	sh.service.CreateSegment(requestBody.SegmentName)
+	err := sh.service.CreateSegment(segRequestBody.Name)
+
+	log.Println(err)
+
+	if err == nil {
+		c.JSON(http.StatusCreated, gin.H{"status": "successful created"})
+		return
+	} else if fmt.Sprint(err) == "dublicate value" {
+		c.JSON(http.StatusCreated, gin.H{"status": "Ok"})
+		return
+	} else {
+		c.JSON(http.StatusBadGateway, gin.H{"status": "ooops"})
+		return
+	}
 }
 
 func (sh *SegmentsHandler) DeleteSegment(c *gin.Context) {
+	segToDel := c.Param("name")
+	err := sh.service.DeleteSegment(segToDel)
 
+	if err == nil {
+		c.JSON(http.StatusOK, gin.H{"status": "successful deleted"})
+	} else {
+		c.JSON(http.StatusBadGateway, gin.H{"status": "ooops"})
+	}
+
+	return
 }

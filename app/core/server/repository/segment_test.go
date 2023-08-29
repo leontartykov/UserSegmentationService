@@ -19,7 +19,7 @@ func TestSegmentsRepositoryInterface(t *testing.T) {
 
 	exampleSegName := "AVITO_VOICE_MESSAGES"
 
-	t.Run("CreateSegmentWithName", func(t *testing.T) {
+	t.Run("Unit=CreateSegmentWithName", func(t *testing.T) {
 		err := segmentsRepo.Create(exampleSegName)
 
 		if err != nil {
@@ -27,7 +27,7 @@ func TestSegmentsRepositoryInterface(t *testing.T) {
 		}
 	})
 
-	t.Run("CreateSegmentNoName", func(t *testing.T) {
+	t.Run("Unit=CreateSegmentNoName", func(t *testing.T) {
 		err := segmentsRepo.Create("")
 
 		if err == nil {
@@ -35,7 +35,7 @@ func TestSegmentsRepositoryInterface(t *testing.T) {
 		}
 	})
 
-	t.Run("DeleteSegment", func(t *testing.T) {
+	t.Run("Unit=DeleteSegment", func(t *testing.T) {
 		err := segmentsRepo.Delete(exampleSegName)
 
 		if err != nil {
