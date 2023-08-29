@@ -2,24 +2,19 @@ package repository
 
 import (
 	"fmt"
+	"main/server/model"
 	"main/server/pkg/dbclient"
 
 	"github.com/jmoiron/sqlx"
 )
 
 type IUsersRepository interface {
-	GetActiveSegments() error
+	GetActiveSegments(userId int) (model.SegmentServiceModel, error)
 	ChangeSegments() error
 }
 
 type UsersRepository struct {
 	db *sqlx.DB
-}
-
-type DbSegments struct {
-	to_add    []string
-	to_delete []string
-	user_id   string
 }
 
 func NewUsersRepository(db *dbclient.Client) *UsersRepository {
@@ -28,22 +23,22 @@ func NewUsersRepository(db *dbclient.Client) *UsersRepository {
 	}
 }
 
-func (ur *UsersRepository) ChangeSegments(segments DbSegments) error {
+func (ur *UsersRepository) ChangeSegments(segments model.DbChangedSegments) error {
 	tx := ur.db.MustBegin()
 
-	if !(len(segments.to_add) == 0) {
+	if !(len(segments.To_add) == 0) {
 		query := `CALL AddUserSegments($1::integer, $2::text, to_date((now()::date)::text, 'YYYY-MM-DD'));`
 
-		for _, segment := range segments.to_add {
-			tx.MustExec(query, segments.user_id, segment)
+		for _, segment := range segments.To_add {
+			tx.MustExec(query, segments.User_id, segment)
 		}
 	}
 
-	if !(len(segments.to_delete) == 0) {
+	if !(len(segments.To_delete) == 0) {
 		query := `CALL DeleteUserSegments($1::integer, $2::text, to_date((now()::date)::text, 'YYYY-MM-DD'));`
 
-		for _, segment := range segments.to_delete {
-			tx.MustExec(query, segments.user_id, segment)
+		for _, segment := range segments.To_delete {
+			tx.MustExec(query, segments.User_id, segment)
 		}
 	}
 	err := tx.Commit()
@@ -51,7 +46,7 @@ func (ur *UsersRepository) ChangeSegments(segments DbSegments) error {
 	return err
 }
 
-func (ur *UsersRepository) GetActiveSegments(userId int) ([]string, error) {
+func (ur *UsersRepository) GetActiveSegments(userId int) (*model.SegmentServiceModel, error) {
 	var userSegment string
 	var userSegments []string
 	if userId <= 0 {
@@ -59,7 +54,7 @@ func (ur *UsersRepository) GetActiveSegments(userId int) ([]string, error) {
 	}
 
 	tx := ur.db.MustBegin()
-	query := `SELECT segmentName FROM userssegments as us JOIN users on us.userName = users.nickname WHERE users.id = $1 AND deleted_at IS NULL;`
+	query := `SELECT segment_name FROM users_segments WHERE users.user_id = $1 AND deleted_at IS NULL;`
 
 	rows, err := tx.Queryx(query, userId)
 
@@ -71,5 +66,10 @@ func (ur *UsersRepository) GetActiveSegments(userId int) ([]string, error) {
 		rows.Scan(&userSegment)
 		userSegments = append(userSegments, userSegment)
 	}
-	return userSegments, nil
+
+	userSegmentsEntity := model.SegmentDbEntity{
+		Segments: userSegments,
+	}
+
+	return model.SegEntityToModel(userSegmentsEntity), nil
 }

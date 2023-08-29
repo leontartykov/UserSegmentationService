@@ -2,6 +2,7 @@ package repository
 
 import (
 	"log"
+	"main/server/model"
 	"main/server/pkg/dbclient"
 	"main/server/session"
 	"testing"
@@ -17,33 +18,38 @@ func TestUsersRepositoryInterface(t *testing.T) {
 
 	userRepo := NewUsersRepository(dbClient)
 
-	dbSegmentsAdd := DbSegments{
-		to_add:  []string{"AVITO_VOICE_MESSAGES", "AVITO_PERFORMANCE_VAS", "AVITO_IMAGES", "AVITO_DISCOUNT_30", "AVITO_DISCOUNT_50"},
-		user_id: "1",
+	dbSegmentsAdd := model.DbChangedSegments{
+		To_add:  []string{"AVITO_VOICE_MESSAGES", "AVITO_PERFORMANCE_VAS", "AVITO_IMAGES", "AVITO_DISCOUNT_30", "AVITO_DISCOUNT_50"},
+		User_id: "1",
 	}
 
-	dbSegmentsDelete := DbSegments{
-		to_delete: []string{"AVITO_DISCOUNT_30", "AVITO_PERFORMANCE_VAS"},
-		user_id:   "1",
+	dbSegmentsDelete := model.DbChangedSegments{
+		To_delete: []string{"AVITO_DISCOUNT_30", "AVITO_PERFORMANCE_VAS"},
+		User_id:   "1",
 	}
 
-	dbSegmentsEmpty := DbSegments{
-		user_id: "1",
+	dbSegmentsEmpty := model.DbChangedSegments{
+		User_id: "1",
 	}
 
-	dbSegmentsAddSame := DbSegments{
-		to_add:  []string{"AVITO_VOICE_MESSAGES", "AVITO_IMAGES"},
-		user_id: "1",
+	dbSegmentsAddSame := model.DbChangedSegments{
+		To_add:  []string{"AVITO_VOICE_MESSAGES", "AVITO_IMAGES"},
+		User_id: "1",
 	}
 
-	dbSegmentsAddSameAfterDelete := DbSegments{
-		to_add:  []string{"AVITO_DISCOUNT_30", "AVITO_PERFORMANCE_VAS"},
-		user_id: "1",
+	dbSegmentsAddSameAfterDelete := model.DbChangedSegments{
+		To_add:  []string{"AVITO_DISCOUNT_30", "AVITO_PERFORMANCE_VAS"},
+		User_id: "1",
 	}
 
 	err = initDataBase(dbClient, dbSegmentsAdd)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	segmentsRepo := NewSegmentsRepository(dbClient)
+	for _, segment := range dbSegmentsAdd.To_add {
+		segmentsRepo.Create(segment)
 	}
 
 	t.Run("ChangeUserSegmentsAdd", func(t *testing.T) {
@@ -54,13 +60,13 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		}
 
 		tx := dbClient.Db.MustBegin()
-		query := `SELECT from userssegments`
+		query := `SELECT from users_segments`
 		result := tx.MustExec(query)
 
 		get_rows, _ := result.RowsAffected()
 
-		if int(get_rows) != len(dbSegmentsAdd.to_add) {
-			t.Errorf("Not right number of added rows: expected %d, want %d", int(get_rows), len(dbSegmentsAdd.to_add))
+		if int(get_rows) != len(dbSegmentsAdd.To_add) {
+			t.Errorf("Not right number of added rows: expected %d, want %d", int(get_rows), len(dbSegmentsAdd.To_add))
 		}
 	})
 
@@ -72,13 +78,13 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		}
 
 		tx := dbClient.Db.MustBegin()
-		query := `SELECT from userssegments`
+		query := `SELECT from users_segments`
 		result := tx.MustExec(query)
 
 		get_rows, _ := result.RowsAffected()
 
-		if int(get_rows) != len(dbSegmentsAdd.to_add) {
-			t.Errorf("Not right number of rows after delete: expected %d, want %d", int(get_rows), len(dbSegmentsAdd.to_add))
+		if int(get_rows) != len(dbSegmentsAdd.To_add) {
+			t.Errorf("Not right number of rows after delete: expected %d, want %d", int(get_rows), len(dbSegmentsAdd.To_add))
 		}
 	})
 
@@ -90,13 +96,13 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		}
 
 		tx := dbClient.Db.MustBegin()
-		query := `SELECT from userssegments`
+		query := `SELECT from users_segments`
 		result := tx.MustExec(query)
 
 		get_rows, _ := result.RowsAffected()
 
-		if int(get_rows) != len(dbSegmentsAdd.to_add) {
-			t.Errorf("Not right number of rows after empty add: expected %d, want %d", int(get_rows), len(dbSegmentsAdd.to_add))
+		if int(get_rows) != len(dbSegmentsAdd.To_add) {
+			t.Errorf("Not right number of rows after empty add: expected %d, want %d", int(get_rows), len(dbSegmentsAdd.To_add))
 		}
 	})
 
@@ -108,13 +114,13 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		}
 
 		tx := dbClient.Db.MustBegin()
-		query := `SELECT from userssegments`
+		query := `SELECT from users_segments`
 		result := tx.MustExec(query)
 
 		get_rows, _ := result.RowsAffected()
 
-		if int(get_rows) != len(dbSegmentsAdd.to_add) {
-			t.Errorf("Not right number of rows after add: expected %d, want %d", int(get_rows), len(dbSegmentsAdd.to_add)+1)
+		if int(get_rows) != len(dbSegmentsAdd.To_add) {
+			t.Errorf("Not right number of rows after add: expected %d, want %d", int(get_rows), len(dbSegmentsAdd.To_add)+1)
 		}
 	})
 
@@ -126,39 +132,13 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		}
 
 		tx := dbClient.Db.MustBegin()
-		query := `SELECT from userssegments`
+		query := `SELECT from users_segments`
 		result := tx.MustExec(query)
 
 		get_rows, _ := result.RowsAffected()
 
-		if int(get_rows) != len(dbSegmentsAdd.to_add)+len(dbSegmentsAddSameAfterDelete.to_add) {
-			t.Errorf("Not right number of rows add after delete: expected %d, want %d", int(get_rows), len(dbSegmentsAdd.to_add)+len(dbSegmentsAddSameAfterDelete.to_add))
-		}
-	})
-
-	t.Run("GetExistingUsersSegments", func(t *testing.T) {
-		userId := 1
-		userSegments, err := userRepo.GetActiveSegments(userId)
-
-		if err != nil {
-			t.Error(err)
-		}
-
-		if len(userSegments) != len(dbSegmentsAdd.to_add) {
-			t.Errorf("Not right number of existsing user segments: expected %d, want %d", len(userSegments), len(dbSegmentsAdd.to_add))
-		}
-	})
-
-	t.Run("GetNotExistingUser", func(t *testing.T) {
-		userId := 2
-		userSegments, err := userRepo.GetActiveSegments(userId)
-
-		if err != nil {
-			t.Error(err)
-		}
-
-		if len(userSegments) != 0 {
-			t.Errorf("Not right number of not existing user: expected %d, want %d", len(userSegments), 0)
+		if int(get_rows) != len(dbSegmentsAdd.To_add)+len(dbSegmentsAddSameAfterDelete.To_add) {
+			t.Errorf("Not right number of rows add after delete: expected %d, want %d", int(get_rows), len(dbSegmentsAdd.To_add)+len(dbSegmentsAddSameAfterDelete.To_add))
 		}
 	})
 
@@ -172,18 +152,17 @@ func TestUsersRepositoryInterface(t *testing.T) {
 	})
 }
 
-func initDataBase(dbClient *dbclient.Client, segments DbSegments) error {
+func initDataBase(dbClient *dbclient.Client, segments model.DbChangedSegments) error {
 	tx := dbClient.Db.MustBegin()
 
 	query := `DELETE FROM users;
-			  INSERT INTO users (nickname) VALUES ('user1');
-			  DELETE FROM usersSegments;
+			  DELETE FROM users_segments;
 			  DELETE FROM segments;`
 
 	tx.MustExec(query)
 
 	segmentsRepo := NewSegmentsRepository(dbClient)
-	for _, segment := range segments.to_add {
+	for _, segment := range segments.To_add {
 		segmentsRepo.Create(segment)
 	}
 

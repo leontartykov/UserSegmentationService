@@ -25,11 +25,13 @@ func (ss *SegmentsService) CreateSegment(segmentName string) error {
 		return fmt.Errorf("failed to get segmentName")
 	}
 
-	ss.repository.Create(segmentName)
-
-	return nil
+	return ss.repository.Create(segmentName)
 }
 
 func (ss *SegmentsService) DeleteSegment(segmentName string) error {
-	return nil
+	if segmentName == "" {
+		return fmt.Errorf("failed to get segmentName")
+	}
+
+	return ss.repository.Delete(segmentName)
 }

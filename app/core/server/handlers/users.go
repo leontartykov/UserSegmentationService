@@ -1,14 +1,18 @@
 package handlers
 
 import (
+	"log"
+	"main/server/model"
 	"main/server/services"
+	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 type IUsersHandler interface {
-	ChangeUserSegments(context *gin.Context)
-	GetActiveUserSegments(context *gin.Context)
+	ChangeUserSegments(c *gin.Context)
+	GetActiveUserSegments(c *gin.Context)
 }
 
 type UsersHandler struct {
@@ -26,8 +30,43 @@ func (uh *UsersHandler) Register(router *gin.Engine) {
 	{
 		users := v1.Group("/users/:id")
 		{
-			users.PUT("/segments", uh.service.ChangeSegments)
-			users.GET("/segments/active", uh.service.GetActiveSegments)
+			users.PUT("/segments", uh.ChangeUserSegments)
+			users.GET("/segments/active", uh.GetActiveUserSegments)
 		}
 	}
+}
+
+func (uh *UsersHandler) ChangeUserSegments(c *gin.Context) {
+	id := c.Param("id")
+
+	if _, err := strconv.Atoi(id); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "no input id data"})
+		return
+	}
+
+	var requestBody model.ServChangedSegments
+
+	if err := c.BindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "no input segments data"})
+		return
+	}
+
+	requestBody.User_id = id
+	log.Println(requestBody)
+
+	err := uh.service.ChangeSegments(requestBody)
+
+	log.Println("ERROR", err)
+
+	if err == nil {
+		c.JSON(http.StatusOK, gin.H{"status": "successful changing"})
+		return
+	} else {
+		c.JSON(http.StatusBadGateway, gin.H{"status": "ooops"})
+		return
+	}
+}
+
+func (uh *UsersHandler) GetActiveUserSegments(c *gin.Context) {
+
 }
