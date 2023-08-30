@@ -28,11 +28,12 @@ func (ur *UsersRepository) ChangeSegments(segments model.DbChangedSegments) erro
 	var (
 		isEmptySegTable bool
 		err             error = nil
+		isSegmentExists bool
 	)
 	query := `SELECT CheckSegmentsTableIsEmpty();`
 
 	ur.db.Get(&isEmptySegTable, query)
-	log.Println("isEmptySegTable: ", isEmptySegTable)
+
 	if isEmptySegTable {
 		return fmt.Errorf("no seg data in table")
 	}
@@ -40,17 +41,26 @@ func (ur *UsersRepository) ChangeSegments(segments model.DbChangedSegments) erro
 	tx := ur.db.MustBegin()
 
 	if !(len(segments.To_add) == 0) {
-		query := `CALL AddUserSegments($1::integer, $2::text, to_date((now()::date)::text, 'YYYY-MM-DD'));`
+		query_exists := `SELECT CheckIsSegmentExists($1::text)`
+
+		query = `CALL AddUserSegments($1::integer, $2::text, to_date((now()::date)::text, 'YYYY-MM-DD'));`
 
 		for _, segment := range segments.To_add {
-			result := tx.MustExec(query, segments.User_id, segment)
-			_, err = result.RowsAffected()
-
-			if rows, _ := result.RowsAffected(); rows == 0 {
-				log.Println("Error while insert segment data; perhaps segment doesn't exist")
+			ur.db.Get(&isSegmentExists, query_exists, segment)
+			log.Println()
+			if !isSegmentExists {
+				log.Println("isSegmentExists error: ", isSegmentExists, "; segment: ", segment)
 				err = fmt.Errorf("segment not exists")
-				break
+			} else {
+				_, err := tx.Exec(query, segments.User_id, segment)
+
+				if err != nil {
+					log.Println("Error while insert segment data; perhaps segment doesn't exist")
+					err = fmt.Errorf("segment not exists")
+					break
+				}
 			}
+
 		}
 	}
 
@@ -69,7 +79,7 @@ func (ur *UsersRepository) ChangeSegments(segments model.DbChangedSegments) erro
 		query := `CALL DeleteUserSegments($1::integer, $2::text, to_date((now()::date)::text, 'YYYY-MM-DD'));`
 
 		for _, segment := range segments.To_delete {
-			tx.MustExec(query, segments.User_id, segment)
+			tx.Exec(query, segments.User_id, segment)
 		}
 	}
 	err = tx.Commit()
@@ -85,7 +95,7 @@ func (ur *UsersRepository) GetActiveSegments(userId int) (*model.SegmentServiceM
 	}
 
 	tx := ur.db.MustBegin()
-	query := `SELECT segment_name FROM users_segments WHERE users.user_id = $1 AND deleted_at IS NULL;`
+	query := `SELECT segment_name FROM users_segments as us WHERE us.user_id = $1 AND deleted_at IS NULL;`
 
 	rows, err := tx.Queryx(query, userId)
 

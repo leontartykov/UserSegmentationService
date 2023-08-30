@@ -35,7 +35,15 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION CheckSegmentsTableIsEmpty() RETURNS integer AS
 $BODY$  
     BEGIN
-        RETURN (SELECT CASE WHEN EXISTS(SELECT 1 FROM segments) THEN 1 ELSE 0 END AS IsEmpty);
+        RETURN (SELECT CASE WHEN EXISTS(SELECT 1 FROM segments) THEN 0 ELSE 1 END AS IsEmpty);
+    END
+$BODY$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION CheckIsSegmentExists(segmentName text) RETURNS integer AS
+$BODY$  
+    BEGIN
+        RETURN (SELECT CASE WHEN EXISTS(SELECT 1 FROM segments WHERE name = segmentName) THEN 1 ELSE 0 END AS IsEmpty);
     END
 $BODY$
 LANGUAGE plpgsql;

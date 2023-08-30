@@ -38,7 +38,6 @@ func (uh *UsersHandler) Register(router *gin.Engine) {
 }
 
 func (uh *UsersHandler) ChangeUserSegments(c *gin.Context) {
-	log.Println("HANDLER")
 	id := c.Param("id")
 
 	if _, err := strconv.Atoi(id); err != nil {
@@ -60,6 +59,7 @@ func (uh *UsersHandler) ChangeUserSegments(c *gin.Context) {
 	if err == nil {
 		c.JSON(http.StatusOK, gin.H{"status": "successful changing"})
 	} else if fmt.Sprint(err) == "segment not exists" || fmt.Sprint(err) == "no seg data in table" {
+		log.Println(err)
 		c.JSON(http.StatusNotFound, gin.H{"status": "one of segments not exists"})
 	} else {
 		log.Println("Error: ", fmt.Sprint(err))
@@ -69,5 +69,21 @@ func (uh *UsersHandler) ChangeUserSegments(c *gin.Context) {
 }
 
 func (uh *UsersHandler) GetActiveUserSegments(c *gin.Context) {
+	id := c.Param("id")
 
+	if _, err := strconv.Atoi(id); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "no input id data"})
+		return
+	}
+
+	segments, err := uh.service.GetActiveSegments(id)
+
+	if err == nil {
+		c.JSON(http.StatusOK, segments)
+	} else {
+		log.Println("Error: ", fmt.Sprint(err))
+		c.JSON(http.StatusBadGateway, gin.H{"status": "ooops"})
+	}
+
+	return
 }

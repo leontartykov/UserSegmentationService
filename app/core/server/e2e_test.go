@@ -56,7 +56,7 @@ func TestApiV1Methods(t *testing.T) {
 
 		router.ServeHTTP(w, r)
 
-		assert.Equal(t, w.Code, 201)
+		assert.Equal(t, 201, w.Code)
 
 		json.NewDecoder(w.Body).Decode(&result)
 		log.Println("result: ", result)
@@ -68,7 +68,7 @@ func TestApiV1Methods(t *testing.T) {
 
 		router.ServeHTTP(w, r)
 
-		assert.Equal(t, w.Code, 200)
+		assert.Equal(t, 200, w.Code)
 	})
 
 	t.Run("E2E: create segment that already exists", func(t *testing.T) {
@@ -82,7 +82,7 @@ func TestApiV1Methods(t *testing.T) {
 
 		router.ServeHTTP(w, r)
 
-		assert.Equal(t, w.Code, 201)
+		assert.Equal(t, 201, w.Code)
 
 		json.NewDecoder(w.Body).Decode(&result)
 		log.Println("result: ", result)
@@ -94,7 +94,7 @@ func TestApiV1Methods(t *testing.T) {
 
 		router.ServeHTTP(w, r)
 
-		assert.Equal(t, w.Code, 404)
+		assert.Equal(t, 404, w.Code)
 	})
 
 	t.Run("E2E: add exists segments to user", func(t *testing.T) {
@@ -107,7 +107,16 @@ func TestApiV1Methods(t *testing.T) {
 
 		router.ServeHTTP(w, r)
 
-		assert.Equal(t, w.Code, 201)
+		assert.Equal(t, 200, w.Code)
+	})
+
+	t.Run("E2E: get user's active segments", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/api/v1/users/1/segments/active", nil)
+
+		router.ServeHTTP(w, r)
+
+		assert.Equal(t, w.Code, 200)
 	})
 }
 
@@ -126,7 +135,8 @@ func clearDataBase(dbClient *dbclient.Client) error {
 
 func insertSomeSegments(dbClient *dbclient.Client) error {
 	tx := dbClient.Db.MustBegin()
-	query := `DELETE FROM segments;`
+	query := `DELETE FROM segments;
+			  INSERT INTO segments (name) VALUES ('AVITO_VOICE_MESSAGES'), ('AVITO_PERFORMANCE_VAS'), ('AVITO_DISCOUNT_30');`
 	tx.MustExec(query)
 	err := tx.Commit()
 
