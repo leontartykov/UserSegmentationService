@@ -2,7 +2,6 @@ package services
 
 import (
 	"fmt"
-	"log"
 	"main/server/model"
 	"main/server/repository"
 	"strconv"
@@ -24,7 +23,6 @@ func NewUsersService(repository repository.UsersRepository) *UsersService {
 }
 
 func (us *UsersService) ChangeSegments(segs model.ServChangedSegments) error {
-	log.Println("Service struct: ", segs)
 	if len(segs.To_add) == 0 && len(segs.To_delete) == 0 {
 		return fmt.Errorf("Empty struct ")
 	}

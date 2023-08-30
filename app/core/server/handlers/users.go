@@ -58,7 +58,7 @@ func (uh *UsersHandler) ChangeUserSegments(c *gin.Context) {
 
 	if err == nil {
 		c.JSON(http.StatusOK, gin.H{"status": "successful changing"})
-	} else if fmt.Sprint(err) == "segment not exists" || fmt.Sprint(err) == "no seg data in table" {
+	} else if fmt.Sprint(err) == "segment not exists" || fmt.Sprint(err) == "no seg data in table" || fmt.Sprint(err) == "one of segment to delete not found" {
 		log.Println(err)
 		c.JSON(http.StatusNotFound, gin.H{"status": "one of segments not exists"})
 	} else {

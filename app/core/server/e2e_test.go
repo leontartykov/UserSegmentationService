@@ -18,13 +18,19 @@ import (
 )
 
 type resultJsonMessage struct {
-	status string
+	Status string
+}
+
+type resultJsonActiveSegments struct {
+	Segments []string
 }
 
 var (
 	createSegmentRegisterBody = `{"name": "AVITO_VOICE_MESSAGES"}`
-	result                    resultJsonMessage
-	changeSegs                = `{"to_add": ["AVITO_VOICE_MESSAGES", "AVITO_PERFORMANCE_VAS", "AVITO_DISCOUNT_30"]}`
+	resultMsg                 resultJsonMessage
+	changeSegsToAdd           = `{"to_add": ["AVITO_VOICE_MESSAGES", "AVITO_PERFORMANCE_VAS", "AVITO_DISCOUNT_30"]}`
+	changeSegsToDelete        = `{"to_delete": ["AVITO_VOICE_MESSAGES", "AVITO_PERFORMANCE_VAS", "AVITO_DISCOUNT_30"]}`
+	resultActiveSegs          resultJsonActiveSegments
 )
 
 func TestApiV1Methods(t *testing.T) {
@@ -58,8 +64,8 @@ func TestApiV1Methods(t *testing.T) {
 
 		assert.Equal(t, 201, w.Code)
 
-		json.NewDecoder(w.Body).Decode(&result)
-		log.Println("result: ", result)
+		json.NewDecoder(w.Body).Decode(&resultMsg)
+		log.Println("result: ", resultMsg)
 	})
 
 	t.Run("E2E: delete same segment", func(t *testing.T) {
@@ -84,13 +90,13 @@ func TestApiV1Methods(t *testing.T) {
 
 		assert.Equal(t, 201, w.Code)
 
-		json.NewDecoder(w.Body).Decode(&result)
-		log.Println("result: ", result)
+		json.NewDecoder(w.Body).Decode(&resultMsg)
+		log.Println("result: ", resultMsg)
 	})
 
 	t.Run("E2E: add not exists segments to user", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("PUT", "/api/v1/users/1/segments", bytes.NewBufferString(changeSegs))
+		r := httptest.NewRequest("PUT", "/api/v1/users/1/segments", bytes.NewBufferString(changeSegsToAdd))
 
 		router.ServeHTTP(w, r)
 
@@ -103,7 +109,7 @@ func TestApiV1Methods(t *testing.T) {
 			t.Errorf(fmt.Sprintf("Problem with insert data: %s", fmt.Sprint(err)))
 		}
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("PUT", "/api/v1/users/1/segments", bytes.NewBufferString(changeSegs))
+		r := httptest.NewRequest("PUT", "/api/v1/users/1/segments", bytes.NewBufferString(changeSegsToAdd))
 
 		router.ServeHTTP(w, r)
 
@@ -116,7 +122,60 @@ func TestApiV1Methods(t *testing.T) {
 
 		router.ServeHTTP(w, r)
 
-		assert.Equal(t, w.Code, 200)
+		assert.Equal(t, 200, w.Code)
+	})
+
+	t.Run("E2E: delete user's segments", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("PUT", "/api/v1/users/1/segments", bytes.NewBufferString(changeSegsToDelete))
+
+		router.ServeHTTP(w, r)
+
+		assert.Equal(t, 200, w.Code)
+	})
+
+	t.Run("E2E: get user's active segments after delete user from them all", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/api/v1/users/1/segments/active", nil)
+
+		router.ServeHTTP(w, r)
+
+		assert.Equal(t, 200, w.Code)
+
+		json.NewDecoder(w.Body).Decode(&resultActiveSegs)
+
+		assert.Equal(t, 0, len(resultActiveSegs.Segments))
+	})
+
+	t.Run("E2E: add exists segments to user", func(t *testing.T) {
+		err := insertSomeSegments(dbClient)
+		if err != nil {
+			t.Errorf(fmt.Sprintf("Problem with insert data: %s", fmt.Sprint(err)))
+		}
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("PUT", "/api/v1/users/1/segments", bytes.NewBufferString(changeSegsToAdd))
+
+		router.ServeHTTP(w, r)
+
+		assert.Equal(t, 200, w.Code)
+	})
+
+	t.Run("E2E: get user's active segments after deleting and inserting same", func(t *testing.T) {
+		needActiveSegs := []string{"AVITO_VOICE_MESSAGES", "AVITO_PERFORMANCE_VAS", "AVITO_DISCOUNT_30"}
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/api/v1/users/1/segments/active", nil)
+
+		router.ServeHTTP(w, r)
+
+		assert.Equal(t, 200, w.Code)
+
+		json.NewDecoder(w.Body).Decode(&resultActiveSegs)
+
+		assert.Equal(t, len(needActiveSegs), len(resultActiveSegs.Segments))
+
+		for i, segment := range resultActiveSegs.Segments {
+			assert.Equal(t, needActiveSegs[i], segment)
+		}
 	})
 }
 

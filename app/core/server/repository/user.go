@@ -47,7 +47,6 @@ func (ur *UsersRepository) ChangeSegments(segments model.DbChangedSegments) erro
 
 		for _, segment := range segments.To_add {
 			ur.db.Get(&isSegmentExists, query_exists, segment)
-			log.Println()
 			if !isSegmentExists {
 				log.Println("isSegmentExists error: ", isSegmentExists, "; segment: ", segment)
 				err = fmt.Errorf("segment not exists")
@@ -80,9 +79,18 @@ func (ur *UsersRepository) ChangeSegments(segments model.DbChangedSegments) erro
 
 		for _, segment := range segments.To_delete {
 			tx.Exec(query, segments.User_id, segment)
+
+			/*numDelete, _ := result.RowsAffected()
+			if numDelete == 0 {
+				log.Println("Error while delete user from segment; perhaps segment doesn't exist")
+				err = fmt.Errorf("one of segment to delete not found")
+				break
+			}*/
 		}
 	}
-	err = tx.Commit()
+	if err == nil {
+		err = tx.Commit()
+	}
 
 	return err
 }
