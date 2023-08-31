@@ -17,6 +17,10 @@
     {
       "name": "users",
       "description": "action with users"
+    },
+    {
+      "name": "reports",
+      "description": "actions with reports"
     }
   ],
   "components": {
@@ -69,7 +73,37 @@
         },
         "responses": {
           "200": {
-            "description": "successful creation"
+            "description": "successful creation",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "successful creation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "segment is not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "successful deletion"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "error in server",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "oops"
+                }
+              }
+            }
           }
         }
       }
@@ -92,12 +126,27 @@
         ],
         "responses": {
           "200": {
-            "description": "successful creation",
+            "description": "successful deletion",
             "content": {
               "text/plain": {
                 "schema": {
                   "type": "string",
-                  "example": "successful creation"
+                  "example": "successful deletion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "no input segment name",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "no input segment": {
+                    "value": "failed to get segment name\""
+                  }
                 }
               }
             }
@@ -109,6 +158,17 @@
                 "schema": {
                   "type": "string",
                   "example": "successful deletion"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "error in server",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "oops"
                 }
               }
             }
@@ -153,13 +213,42 @@
               }
             }
           },
+          "400": {
+            "description": "empty date time",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "no input Id": {
+                    "value": "no id input segment"
+                  },
+                  "no input segments": {
+                    "value": "no input segments"
+                  }
+                }
+              }
+            }
+          },
           "404": {
-            "description": "user is not found",
+            "description": "segments not exists",
             "content": {
               "text/plain": {
                 "schema": {
                   "type": "string",
-                  "example": "user is not found"
+                  "example": "one of segments not exists"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "error in server",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "oops"
                 }
               }
             }
@@ -190,6 +279,81 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Segments"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "empty date time",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "no input id data"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "error in server",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "oops"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/usersSegs/{year}": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "get a report on the user's segments",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "example": " 1; segment_1; добавление; '30-08-2023; 11:40'\n 1; segment_1; удаление; '31-08-2023; 12:40'\n 2; segment_1; добавление; '31-08-2023; 14:00' "
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "empty date time",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "failed to get date time"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "error in server",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "oops"
                 }
               }
             }
