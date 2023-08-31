@@ -1,0 +1,365 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Сервис динамического сегментирования пользователей",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost/api/v1"
+    }
+  ],
+  "tags": [
+    {
+      "name": "segments",
+      "description": "actions with segments"
+    },
+    {
+      "name": "users",
+      "description": "action with users"
+    },
+    {
+      "name": "reports",
+      "description": "actions with reports"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Segments": {
+        "type": "array",
+        "description": "list of segments",
+        "items": {
+          "type": "string",
+          "example": "AVITO_VOICE_MESSAGES, AVITO_PERFORMANCE_VAS, AVITO_DISCOUNT_30, AVITO_DISCOUNT_50"
+        }
+      },
+      "ChangeSegmentsList": {
+        "type": "object",
+        "description": "segments to add and delete",
+        "properties": {
+          "add": {
+            "$ref": "#/components/schemas/Segments"
+          },
+          "delete": {
+            "$ref": "#/components/schemas/Segments"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/segments": {
+      "post": {
+        "tags": [
+          "segments"
+        ],
+        "summary": "create segment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful creation",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "successful creation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "segment is not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "successful deletion"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "error in server",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "oops"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/segments/{name}": {
+      "delete": {
+        "tags": [
+          "segments"
+        ],
+        "summary": "delete segment",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful deletion",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "successful deletion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "no input segment name",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "no input segment": {
+                    "value": "failed to get segment name\""
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "segment is not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "successful deletion"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "error in server",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "oops"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/segments": {
+      "put": {
+        "tags": [
+          "users"
+        ],
+        "summary": "add segments, delete segments",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeSegmentsList"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful changing",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "successful changing"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "empty date time",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "no input Id": {
+                    "value": "no id input segment"
+                  },
+                  "no input segments": {
+                    "value": "no input segments"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "segments not exists",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "one of segments not exists"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "error in server",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "oops"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/segments/active": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "get active user segments",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Segments"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "empty date time",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "no input id data"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "error in server",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "oops"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/usersSegs/{year}": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "get a report on the user's segments",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "example": " 1; segment_1; добавление; '30-08-2023; 11:40'\n 1; segment_1; удаление; '31-08-2023; 12:40'\n 2; segment_1; добавление; '31-08-2023; 14:00' "
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "empty date time",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "failed to get date time"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "error in server",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "oops"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
