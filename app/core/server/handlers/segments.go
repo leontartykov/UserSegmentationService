@@ -11,6 +11,7 @@ import (
 
 type ISegmentHandler interface {
 	CreateSegment(c *gin.Context)
+	DeleteSegment(c *gin.Context)
 }
 
 type SegmentsHandler struct {
@@ -51,14 +52,14 @@ func (sh *SegmentsHandler) CreateSegment(c *gin.Context) {
 
 	if err == nil {
 		c.JSON(http.StatusCreated, gin.H{"status": "successful created"})
-		return
+	} else if fmt.Sprint(err) == "failed to get segmentName" {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed to get segment name"})
 	} else if fmt.Sprint(err) == "dublicate value" {
 		c.JSON(http.StatusCreated, gin.H{"status": "Ok"})
-		return
 	} else {
 		c.JSON(http.StatusBadGateway, gin.H{"status": "ooops"})
-		return
 	}
+	return
 }
 
 func (sh *SegmentsHandler) DeleteSegment(c *gin.Context) {
@@ -67,6 +68,8 @@ func (sh *SegmentsHandler) DeleteSegment(c *gin.Context) {
 
 	if err == nil {
 		c.JSON(http.StatusOK, gin.H{"status": "successful deleted"})
+	} else if fmt.Sprint(err) == "failed to get segmentName" {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed to get segment name"})
 	} else {
 		c.JSON(http.StatusBadGateway, gin.H{"status": "ooops"})
 	}

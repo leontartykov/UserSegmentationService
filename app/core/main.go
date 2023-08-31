@@ -30,8 +30,13 @@ func main() {
 	usersServ := services.NewUsersService(*usersRepo)
 	usersHandler := handlers.NewUsersHandler(*usersServ)
 
+	reportsRepo := repository.NewReportsRepository(dbClient)
+	reportsServ := services.NewReportsService(*reportsRepo)
+	reportsHandler := handlers.NewReportsHandler(*reportsServ)
+
 	segmentsHandler.Register(router)
 	usersHandler.Register(router)
+	reportsHandler.Register(router)
 
 	server.Run(config, router)
 

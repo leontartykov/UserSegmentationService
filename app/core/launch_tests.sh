@@ -1,4 +1,4 @@
 #!/bin/bash
 
-go test -v ./server/repository
-go test -v ./server/e2e_test.go
+docker exec -it app_backend go test -v ./server/repository
+docker exec -it app_backend go test -v ./server/e2e_test.go

@@ -51,8 +51,13 @@ func TestApiV1Methods(t *testing.T) {
 	usersServ := services.NewUsersService(*usersRepo)
 	usersHandler := handlers.NewUsersHandler(*usersServ)
 
+	reportsRepo := repository.NewReportsRepository(dbClient)
+	reportsServ := services.NewReportsService(*reportsRepo)
+	reportsHandler := handlers.NewReportsHandler(*reportsServ)
+
 	segmentsHandler.Register(router)
 	usersHandler.Register(router)
+	reportsHandler.Register(router)
 
 	clearDataBase(dbClient)
 
@@ -176,6 +181,14 @@ func TestApiV1Methods(t *testing.T) {
 		for i, segment := range resultActiveSegs.Segments {
 			assert.Equal(t, needActiveSegs[i], segment)
 		}
+	})
+
+	t.Run("E2E: get report about users and segments", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/api/v1/reports/usersSegs/2023-08", nil)
+
+		router.ServeHTTP(w, r)
+		assert.Equal(t, 200, w.Code)
 	})
 }
 
