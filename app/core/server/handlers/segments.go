@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"log"
+	"main/server/model"
 	"main/server/services"
 	"net/http"
 
@@ -35,18 +36,14 @@ func (sh *SegmentsHandler) Register(router *gin.Engine) {
 	}
 }
 
-type SegmentsRequestBody struct {
-	Name string
-}
-
 func (sh *SegmentsHandler) CreateSegment(c *gin.Context) {
-	var segRequestBody SegmentsRequestBody
+	var segRequestBody model.SegmentsCreateRequestBody
 	if err := c.BindJSON(&segRequestBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "no input data"})
 		return
 	}
 
-	err := sh.service.CreateSegment(segRequestBody.Name)
+	err := sh.service.CreateSegment(segRequestBody)
 
 	log.Println(err)
 

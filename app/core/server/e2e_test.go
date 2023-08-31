@@ -26,7 +26,7 @@ type resultJsonActiveSegments struct {
 }
 
 var (
-	createSegmentRegisterBody = `{"name": "AVITO_VOICE_MESSAGES"}`
+	createSegmentRegisterBody = `{"name": "AVITO_VOICE_MESSAGES", "percent": 0}`
 	resultMsg                 resultJsonMessage
 	changeSegsToAdd           = `{"to_add": ["AVITO_VOICE_MESSAGES", "AVITO_PERFORMANCE_VAS", "AVITO_DISCOUNT_30"]}`
 	changeSegsToDelete        = `{"to_delete": ["AVITO_VOICE_MESSAGES", "AVITO_PERFORMANCE_VAS", "AVITO_DISCOUNT_30"]}`

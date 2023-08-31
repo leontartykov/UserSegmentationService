@@ -33,3 +33,8 @@ func ChangeSegsModelToEntity(segs ServChangedSegments) *DbChangedSegments {
 		User_id:   segs.User_id,
 	}
 }
+
+type SegmentsCreateRequestBody struct {
+	Name    string
+	Percent int
+}
