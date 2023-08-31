@@ -1,11 +1,14 @@
 package repository
 
 import (
+	"fmt"
 	"log"
 	"main/server/model"
 	"main/server/pkg/dbclient"
 	"main/server/session"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestUsersRepositoryInterface(t *testing.T) {
@@ -153,6 +156,7 @@ func TestUsersRepositoryInterface(t *testing.T) {
 
 	t.Run("GetAllUsersWithNoNeedSegment", func(t *testing.T) {
 		needSegment := "AVITO_DISCOUNT_30"
+		needIds := []int{1, 3}
 		err := prepareAllSegsForGeneratingUsersToSegments(dbClient)
 		if err != nil {
 			t.Error(err)
@@ -161,9 +165,13 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		result, err := userRepo.GetUsersWithoutSegment(needSegment)
 		if err != nil {
 			t.Error(err)
+		} else if len(result.UsersId) != len(needIds) {
+			t.Errorf(fmt.Sprintf("Incorrect result count ids: expected %d; want: %d", len(needIds), len(result.UsersId)))
 		}
 
-		log.Println("result: ", result)
+		for i, id := range needIds {
+			assert.Equal(t, needIds[i], id)
+		}
 	})
 }
 
