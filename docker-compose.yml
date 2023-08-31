@@ -43,5 +43,6 @@ services:
       DB_NAME: ${POSTGRES_DB_NAME}
       LISTEN_PORT: "8080"
       BIND_IP: ${BIND_IP}
+      SSL_MODE: ${POSTGRES_SSL_MODE}
   
 

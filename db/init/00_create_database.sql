@@ -12,9 +12,9 @@ create table segments (
     name text
 );
 
-create table usersSegments (
-    user_id int,
-    segment_id int,
+create table users_segments (
+    user_id integer,
+    segment_name text,
     added_at date,
     deleted_at date,
     expired_at date
