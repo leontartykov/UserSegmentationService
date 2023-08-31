@@ -10,8 +10,9 @@ import (
 )
 
 type IUsersRepository interface {
-	GetActiveSegments(userId int) (model.SegmentServiceModel, error)
-	ChangeSegments() error
+	GetActiveSegments(userId int) (*model.SegmentServiceModel, error)
+	ChangeSegments(segments model.DbChangedSegments) error
+	GetUsersWithoutSegment(segmentName string) (model.UsersWithNeedSegmentServ, error)
 }
 
 type UsersRepository struct {
@@ -121,4 +122,28 @@ func (ur *UsersRepository) GetActiveSegments(userId int) (*model.SegmentServiceM
 	}
 
 	return model.SegEntityToModel(userSegmentsEntity), nil
+}
+
+func (ur *UsersRepository) GetUsersWithoutSegment(segmentName string) (*model.UsersWithNeedSegmentServ, error) {
+	var userId int
+	var usersIds model.UsersWithNeedSegmentDb
+	if segmentName == "" {
+		return nil, fmt.Errorf("no segment name")
+	}
+
+	query := `SELECT get_users_without_current_segment($1::text);`
+
+	tx := ur.db.MustBegin()
+	rows, err := tx.Queryx(query, segmentName)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		rows.Scan(&userId)
+		usersIds.UsersId = append(usersIds.UsersId, userId)
+	}
+
+	return model.UsersWithNeedSegmentDbToServEntity(usersIds), nil
 }

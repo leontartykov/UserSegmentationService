@@ -52,7 +52,7 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		segmentsRepo.Create(segment)
 	}
 
-	t.Run("Unit=ChangeUserSegmentsAdd", func(t *testing.T) {
+	t.Run("ChangeUserSegmentsAdd", func(t *testing.T) {
 		err := userRepo.ChangeSegments(dbSegmentsAdd)
 
 		if err != nil {
@@ -70,7 +70,7 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		}
 	})
 
-	t.Run("Unit=ChangeUserSegmentsDelete", func(t *testing.T) {
+	t.Run("ChangeUserSegmentsDelete", func(t *testing.T) {
 		err := userRepo.ChangeSegments(dbSegmentsDelete)
 
 		if err != nil {
@@ -88,7 +88,7 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		}
 	})
 
-	t.Run("Unit=ChangeUserSegmentsEmpty", func(t *testing.T) {
+	t.Run("ChangeUserSegmentsEmpty", func(t *testing.T) {
 		err := userRepo.ChangeSegments(dbSegmentsEmpty)
 
 		if err != nil {
@@ -106,7 +106,7 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		}
 	})
 
-	t.Run("Unit=ChangeUserSegmentsAddSameSegment", func(t *testing.T) {
+	t.Run("ChangeUserSegmentsAddSameSegment", func(t *testing.T) {
 		err := userRepo.ChangeSegments(dbSegmentsAddSame)
 
 		if err != nil {
@@ -124,7 +124,7 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		}
 	})
 
-	t.Run("Unit=ChangeUserSegmentsAddSameSegmentAfterDelete", func(t *testing.T) {
+	t.Run("ChangeUserSegmentsAddSameSegmentAfterDelete", func(t *testing.T) {
 		err := userRepo.ChangeSegments(dbSegmentsAddSameAfterDelete)
 
 		if err != nil {
@@ -142,13 +142,28 @@ func TestUsersRepositoryInterface(t *testing.T) {
 		}
 	})
 
-	t.Run("Unit=IncorrectUserId", func(t *testing.T) {
+	t.Run("IncorrectUserId", func(t *testing.T) {
 		userId := 0
 		_, err := userRepo.GetActiveSegments(userId)
 
 		if err == nil {
 			t.Error(err)
 		}
+	})
+
+	t.Run("GetAllUsersWithNoNeedSegment", func(t *testing.T) {
+		needSegment := "AVITO_DISCOUNT_30"
+		err := prepareAllSegsForGeneratingUsersToSegments(dbClient)
+		if err != nil {
+			t.Error(err)
+		}
+
+		result, err := userRepo.GetUsersWithoutSegment(needSegment)
+		if err != nil {
+			t.Error(err)
+		}
+
+		log.Println("result: ", result)
 	})
 }
 
@@ -165,6 +180,26 @@ func initDataBase(dbClient *dbclient.Client, segments model.DbChangedSegments) e
 		segmentsRepo.Create(segment)
 	}
 
+	err := tx.Commit()
+
+	return err
+}
+
+func prepareAllSegsForGeneratingUsersToSegments(dbClient *dbclient.Client) error {
+	tx := dbClient.Db.MustBegin()
+
+	query := `DELETE FROM users_segments;
+			  INSERT INTO users_segments (user_id, segment_name, added_at, deleted_at) VALUES
+			  (1, 'AVITO_DISCOUNT_30', '2023-08-30', '2023-09-02'),
+			  (1, 'AVITO_DISCOUNT_30', '2023-08-31', '2023-09-03'),
+			  (1, 'AVITO_DISCOUNT_30', '2023-09-30', '2023-10-01'),
+			  (2, 'AVITO_DISCOUNT_30', '2023-08-30', '2023-09-02'),
+			  (2, 'AVITO_DISCOUNT_30', '2023-09-30', null),
+			  (3, 'AVITO_DISCOUNT_30', '2023-08-30', '2023-09-02'),
+			  (4, 'AVITO_DISCOUNT_30', '2023-08-30', '2023-09-02'),
+			  (4, 'AVITO_DISCOUNT_30', '2023-08-30', null);`
+
+	tx.MustExec(query)
 	err := tx.Commit()
 
 	return err
